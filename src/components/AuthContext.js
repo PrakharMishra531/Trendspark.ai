@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       setLoading(true); // Ensure loading is true at the start
       try {
-        const response = await customFetch('http://127.0.0.1:8000/auth/status/'); // GET request
+        const response = await customFetch('https://trendspark-ai.onrender.com/auth/status/'); // GET request
         const data = await response.json();
 
         if (response.ok) {
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
         return false;
     }
     try {
-      const response = await customFetch('http://127.0.0.1:8000/auth/login/', {
+      const response = await customFetch('https://trendspark-ai.onrender.com/auth/login/', {
         method: 'POST',
         headers: getHeaders(), // <<< Use helper to get headers
         body: JSON.stringify({ username, password }),
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
     }
     // Example: const { username, email, password, password2, firstName, lastName } = userData;
     try {
-      const response = await customFetch('http://127.0.0.1:8000/auth/register/', {
+      const response = await customFetch('https://trendspark-ai.onrender.com/auth/register/', {
         method: 'POST',
         headers: getHeaders(), // <<< Use helper to get headers
         body: JSON.stringify(userData), // Send all required fields
@@ -148,7 +148,7 @@ export const AuthProvider = ({ children }) => {
   
     try {
       console.log("🚀 Sending logout request with CSRF token:", csrfToken);
-      const response = await customFetch('http://127.0.0.1:8000/auth/logout/', {
+      const response = await customFetch('https://trendspark-ai.onrender.com/auth/logout/', {
         method: 'POST',
         headers: getHeaders(),
       });

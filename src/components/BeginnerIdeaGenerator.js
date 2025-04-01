@@ -1,9 +1,8 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // Remove Card import since we'll create our own
 import IdeaDetails from './IdeaDetails';
 import './BeginnerIdeaGenerator.css';
 import customFetch from './api';
-import { useAuth } from './AuthContext';  // Import the AuthContext to get the CSRF token
 import { getCsrfTokenGlobally } from './csrfTokenStorage';
 
 // Custom IdeaCard component with Vercel-inspired styling
@@ -99,7 +98,7 @@ const BeginnerIdeaGenerator = () => {
         return;
       }
 
-      const response = await customFetch('http://127.0.0.1:8000/api/suggest-ideas/', {
+      const response = await customFetch('https://trendspark-ai.onrender.com/api/suggest-ideas/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +161,7 @@ const BeginnerIdeaGenerator = () => {
         return;
       }
 
-      const response = await customFetch('http://127.0.0.1:8000/api/get-idea-details/', {
+      const response = await customFetch('https://trendspark-ai.onrender.com/api/get-idea-details/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
