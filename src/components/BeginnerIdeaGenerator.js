@@ -1,9 +1,42 @@
-import React, { useState } from 'react';
-import Card from './Card';
+import React, { useState, useContext, useEffect, useRef } from 'react';
+// Remove Card import since we'll create our own
 import IdeaDetails from './IdeaDetails';
 import './BeginnerIdeaGenerator.css';
+import customFetch from './api';
+import { useAuth } from './AuthContext';  // Import the AuthContext to get the CSRF token
+import { getCsrfTokenGlobally } from './csrfTokenStorage';
+
+// Custom IdeaCard component with Vercel-inspired styling
+const IdeaCard = ({ title, description, onClick }) => {
+  return (
+    <div className="idea-card" onClick={onClick}>
+      <div className="idea-card-content">
+        <h4 className="idea-card-title">{title}</h4>
+        <p className="idea-card-description">{description}</p>
+      </div>
+      <div className="idea-card-footer">
+        <span className="idea-card-tag">Trending</span>
+        <span className="idea-card-arrow">→</span>
+      </div>
+    </div>
+  );
+};
 
 const BeginnerIdeaGenerator = () => {
+  
+  const [csrfToken, setCsrfToken] = useState(getCsrfTokenGlobally()); // Initialize with the current token
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const token = getCsrfTokenGlobally();
+      if (token !== csrfToken) {
+        setCsrfToken(token); // Update state if the token changes
+      }
+    }, 1000); // Check for updates every second (adjust as needed)
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [csrfToken]);
+
   const [formData, setFormData] = useState({
     primary_category: '',
     ideal_creator: '',
@@ -11,13 +44,14 @@ const BeginnerIdeaGenerator = () => {
     resources: [],
     video_style: 'short'
   });
-  
+
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedIdea, setSelectedIdea] = useState(null);
   const [ideaDetails, setIdeaDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const resultsRef = useRef(null); // Add a ref for the results section
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,14 +61,14 @@ const BeginnerIdeaGenerator = () => {
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
     if (checked) {
-      setFormData({ 
-        ...formData, 
-        resources: [...formData.resources, value] 
+      setFormData({
+        ...formData,
+        resources: [...formData.resources, value]
       });
     } else {
-      setFormData({ 
-        ...formData, 
-        resources: formData.resources.filter(item => item !== value) 
+      setFormData({
+        ...formData,
+        resources: formData.resources.filter(item => item !== value)
       });
     }
   };
@@ -46,7 +80,7 @@ const BeginnerIdeaGenerator = () => {
     setIdeas([]);
     setSelectedIdea(null);
     setIdeaDetails(null);
-    
+
     // Prepare data for API
     const payload = {
       primary_category: formData.primary_category,
@@ -55,32 +89,56 @@ const BeginnerIdeaGenerator = () => {
       resources: formData.resources.join(','), // Send as comma-separated string
       video_style: formData.video_style
     };
-    
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/suggest-ideas/', {
+      if (!csrfToken) {
+        // Display clear error and guidance
+        setError("CSRF token is missing! Please refresh the page or log in again.");
+        console.error("CSRF token missing when submitting idea generator form");
+        setLoading(false);
+        return;
+      }
+
+      const response = await customFetch('http://127.0.0.1:8000/api/suggest-ideas/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken, // Include CSRF token in the request header
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        credentials: 'include',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       setIdeas(result.ideas || []);
+      
+      // Scroll to results section after ideas are loaded
+      setTimeout(() => {
+        if (resultsRef.current && result.ideas?.length > 0) {
+          resultsRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start'
+          });
+        }
+      }, 500); // Add a small delay to ensure DOM has updated
+      
     } catch (err) {
-      setError(err.message);
-      console.error('Error fetching ideas:', err);
+      // Improved error handling
+      let errorMessage = err.message;
+      if (err.message.includes('403')) {
+        errorMessage = "Authorization error (403): CSRF verification failed. Please refresh the page.";
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-
-const handleCardClick = async (idea) => {
+  const handleCardClick = async (idea) => {
     setSelectedIdea(idea);
     setDetailsLoading(true);
     setIdeaDetails(null);
@@ -99,12 +157,19 @@ const handleCardClick = async (idea) => {
     console.log("Payload being sent:", payload); // Add this line
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/get-idea-details/', {
+      if (!csrfToken) {  // Ensure CSRF token is available
+        setError("CSRF token is missing!");
+        return;
+      }
+
+      const response = await customFetch('http://127.0.0.1:8000/api/get-idea-details/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken, // Include CSRF token in the request header
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -123,9 +188,10 @@ const handleCardClick = async (idea) => {
     }
   };
   return (
+    
     <div className="beginner-idea-generator">
-      <h2>Beginner Content Idea Generator</h2>
-      
+      <h2>Content Idea Generator</h2>
+
       <form onSubmit={handleSubmit} className="idea-form">
         <div className="form-group">
           <label htmlFor="primary_category">
@@ -140,7 +206,7 @@ const handleCardClick = async (idea) => {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="ideal_creator">
             Who is your ideal content creator (e.g., MrBeast, Marques Brownlee)?
@@ -154,7 +220,7 @@ const handleCardClick = async (idea) => {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label>Budget</label>
           <div className="radio-group">
@@ -190,7 +256,7 @@ const handleCardClick = async (idea) => {
             </label>
           </div>
         </div>
-        
+
         <div className="form-group">
           <label>Resources Available</label>
           <div className="checkbox-group">
@@ -236,7 +302,7 @@ const handleCardClick = async (idea) => {
             </label>
           </div>
         </div>
-        
+
         <div className="form-group">
           <label>Preferred Video Style</label>
           <div className="radio-group">
@@ -262,47 +328,53 @@ const handleCardClick = async (idea) => {
             </label>
           </div>
         </div>
-        
+
         <button type="submit" className="submit-button" disabled={loading}>
           {loading ? 'Generating Ideas...' : 'Generate Content Ideas'}
         </button>
       </form>
-      
+
       {error && (
         <div className="error-message">
           Error: {error}. Make sure your Django backend is running.
         </div>
       )}
-      
-      {loading && <div className="loading">Generating ideas...</div>}
-      
+
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading">Generating ideas...</div>
+          <p>Please wait while we create personalized content ideas for you</p>
+        </div>
+      )}
+
       {ideas.length > 0 && (
-        <div className="results-section">
+        <div className="results-section" ref={resultsRef}>
           <h3>Content Ideas</h3>
-          <div className="card-container">
+          <div className="idea-cards-container">
             {ideas.map((idea, index) => (
-              <div 
-                key={index} 
-                className="clickable-card"
+              <IdeaCard
+                key={index}
+                title={idea.topic}
+                description={idea.short_description}
                 onClick={() => handleCardClick(idea)}
-              >
-                <Card
-                  title={idea.topic}
-                  description={idea.short_description}
-                />
-              </div>
+              />
             ))}
           </div>
         </div>
       )}
-      
-      {detailsLoading && <div className="loading">Loading idea details...</div>}
-      
+
+      {detailsLoading && (
+        <div className="loading-overlay">
+          <div className="loading">Loading idea details...</div>
+          <p>Preparing detailed breakdown of your selected idea</p>
+        </div>
+      )}
+
       {ideaDetails && (
-        <IdeaDetails 
-          idea={selectedIdea} 
-          details={ideaDetails} 
-          onClose={() => setIdeaDetails(null)} 
+        <IdeaDetails
+          idea={selectedIdea}
+          details={ideaDetails}
+          onClose={() => setIdeaDetails(null)}
         />
       )}
     </div>

@@ -46,7 +46,7 @@ function AppContent() {
         </Routes>
       </main>
       <footer>
-        <p>Testing Django Backend - Running at http://127.0.0.1:8000</p>
+        <p>Made By Prakhar, Ashish, Pramukh, Ashwin</p>
       </footer>
     </div>
   );

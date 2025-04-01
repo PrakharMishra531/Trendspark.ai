@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import Card from './Card';
 import { useAuth } from './AuthContext'; // Import the AuthContext
 import './HomePage.css';
+import customFetch from './api'; 
+
+
 
 const CACHE_KEY = 'trending_data';
 const CACHE_EXPIRY_TIME = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
@@ -45,9 +48,7 @@ const HomePage = () => {
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/analyze/?country=US', {
-          credentials: 'include' // Include cookies if user is authenticated
-        });
+        const response = await customFetch('http://127.0.0.1:8000/api/analyze/?country=US');
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -91,17 +92,17 @@ const HomePage = () => {
     <div className="home-page">
       <section className="hero-section">
         <div className="hero-content">
-          <h1>Content Creator Platform</h1>
-          <p>Generate and manage content ideas for your digital platforms</p>
+          <h1>Trendspark AI</h1>
+          <p>Discover content trends and generate powerful ideas with AI assistance</p>
 
           {isAuthenticated ? (
             <Link to="/beginner-ideas" className="cta-button">
-              Go to Beginner Idea Generator
+              Generate Content Ideas
             </Link>
           ) : (
             <div className="auth-buttons">
               <Link to="/login" className="secondary-button">Login</Link>
-              <Link to="/signup" className="cta-button">Sign Up Free</Link>
+              <Link to="/signup" className="cta-button">Start Creating</Link>
             </div>
           )}
         </div>
@@ -113,7 +114,16 @@ const HomePage = () => {
         <div className="card-container">
           {data.length > 0 ? (
             data.map((item, index) => (
-              <Card key={index} title={item.title} data={item} />
+              <div key={index} className="card-wrapper">
+                <Card 
+                  title={item.title} 
+                  description={item.description}
+                  data={{
+                    ...item,
+                    thumbnail: item.thumbnail
+                  }} 
+                />
+              </div>
             ))
           ) : (
             <p>No trending data available.</p>

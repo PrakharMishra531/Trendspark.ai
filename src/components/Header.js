@@ -17,14 +17,16 @@ const Header = () => {
   return (
     <header className="app-header">
       <div className="header-content">
-        <h1>Content Creator Platform</h1>
+        <h1>
+          <span style={{ color: "#4f46e5" }}>✦</span> Trendspark AI
+        </h1>
         
         <nav>
           <Link to="/">Home</Link>
           
           {isAuthenticated ? (
             <>
-              <Link to="/beginner-ideas">Beginner Idea Generator</Link>
+              <Link to="/beginner-ideas">Idea Generator</Link>
               <div className="auth-section">
                 <span className="username">Welcome, {user?.username || 'User'}</span>
                 <button className="logout-button" onClick={handleLogout}>

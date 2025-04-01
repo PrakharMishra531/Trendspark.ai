@@ -1,101 +1,117 @@
 .app-header {
-    padding: 15px 0;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: white;
-  }
-  
+  padding: 20px 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header h1 {
+  margin: 0 0 15px 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.8rem;
+  background: linear-gradient(to right, #fff, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-header nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.app-header nav a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.app-header nav a:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+}
+
+.auth-link {
+  padding: 8px 16px;
+}
+
+.auth-button {
+  background: linear-gradient(to right, #4f46e5, #7c3aed);
+  color: white !important;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+.auth-button:hover {
+  background: linear-gradient(to right, #4338ca, #6d28d9);
+  text-decoration: none !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+}
+
+.username {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.logout-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
   .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .app-header h1 {
-    margin: 0 0 15px 0;
-    color: #333;
+    padding: 0 15px;
   }
   
   .app-header nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  
-  .app-header nav a {
-    text-decoration: none;
-    color: #0066cc;
-    font-weight: bold;
-    padding: 5px 0;
-  }
-  
-  .app-header nav a:hover {
-    color: #004499;
-    text-decoration: underline;
+    flex-direction: column;
+    align-items: flex-start;
   }
   
   .auth-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-left: auto;
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: space-between;
   }
-  
-  .auth-link {
-    padding: 6px 12px;
-  }
-  
-  .auth-button {
-    background-color: #0066cc;
-    color: white !important;
-    border-radius: 4px;
-    padding: 6px 12px;
-    transition: background-color 0.2s;
-  }
-  
-  .auth-button:hover {
-    background-color: #004499;
-    text-decoration: none !important;
-  }
-  
-  .username {
-    color: #555;
-    font-weight: 500;
-  }
-  
-  .logout-button {
-    background-color: transparent;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 6px 12px;
-    cursor: pointer;
-    color: #666;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  
-  .logout-button:hover {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-  
-  @media (max-width: 768px) {
-    .header-content {
-      padding: 0 15px;
-    }
-    
-    .app-header nav {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .auth-section {
-      margin-left: 0;
-      margin-top: 10px;
-      width: 100%;
-      justify-content: space-between;
-    }
-  }
+}

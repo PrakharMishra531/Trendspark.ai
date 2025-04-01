@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './IdeaDetails.css';
 
 // Recursive function to handle deeply nested objects or arrays
@@ -28,10 +28,32 @@ const renderNestedObject = (obj) => {
 };
 
 const IdeaDetails = ({ idea, details, onClose }) => {
-  console.log('Details prop in IdeaDetails:', details);
+  // Prevent scrolling on body when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [onClose]);
+
+  // Ensure we have details to render
+  if (!idea || !details) {
+    return null;
+  }
 
   return (
-    <div className="idea-details-overlay">
+    <div className="idea-details-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="idea-details-content">
         <button className="close-button" onClick={onClose}>
           ×

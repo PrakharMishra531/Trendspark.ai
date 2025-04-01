@@ -65,7 +65,11 @@ const Signup = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await signup(formData.username, formData.email, formData.password);
+        const result = await signup({
+            ...formData,
+            password2: formData.confirmPassword, // Map confirmPassword to password2
+          });
+          
       if (result) {
         navigate('/');
       }

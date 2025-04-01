@@ -1,19 +1,14 @@
 .App {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  color: #fff;
 }
 
 .App-header {
   padding: 20px 0;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.App-header h1 {
-  margin: 0 0 15px 0;
-  color: #333;
 }
 
 nav {
@@ -23,14 +18,13 @@ nav {
 
 nav a {
   text-decoration: none;
-  color: #0066cc;
-  font-weight: bold;
-  padding: 5px 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 nav a:hover {
-  color: #004499;
-  text-decoration: underline;
+  color: #fff;
 }
 
 main {
@@ -38,29 +32,32 @@ main {
 }
 
 footer {
-  margin-top: 40px;
-  padding: 20px 0;
-  border-top: 1px solid #e0e0e0;
+  margin-top: 80px;
+  padding: 30px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   text-align: center;
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
 }
 
 .loading, .error {
-  padding: 20px;
-  margin: 20px 0;
+  padding: 30px;
+  margin: 30px 0;
   text-align: center;
-  border-radius: 4px;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .loading {
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
-  color: #0369a1;
+  background-color: rgba(79, 70, 229, 0.1);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  color: #a5b4fc;
 }
 
 .error {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
 }
