@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import json
 from . import llm_utils 
 
-
 load_dotenv()
 MONGODB_URI = os.environ.get("MONGODB_URI")
 
@@ -24,25 +23,31 @@ def analyze_youtube_trends(request):
 
     try:
         cached_data = collection.find({'country': country_code})
-        if not cached_data:
+        # Note: The original returned the cursor, which is not directly useful. 
+        # Converting to a list to check if it's empty.
+        cached_data_list = list(cached_data) 
+        if not cached_data_list:
             return JsonResponse({'message': f'No trending data available for {country_code}.'}, status=404)
 
-        trending_videos = []  # Initialize an empty list to store video data
+        trending_videos = []
         now_utc = datetime.now(pytz.utc)
         data_found = False
 
-        for item in cached_data:
-            if 'type' in item and 'data' in item and 'updated_at' in item:
+        # Use the list of cached data
+        for item in cached_data_list:
+            # UPDATED: Removed the check for 'type' in item. The new API structure
+            # doesn't include this key at the top level, so the old check would fail.
+            if 'data' in item and 'updated_at' in item:
                 updated_at_utc = item['updated_at'].replace(tzinfo=pytz.utc)
                 if now_utc - updated_at_utc < timedelta(days=1):
                     if isinstance(item['data'], list):
-                        trending_videos.extend(item['data']) # If data is already a list, extend
+                        trending_videos.extend(item['data'])
                     else:
-                        trending_videos.append(item['data']) # If data is a single object, append
+                        trending_videos.append(item['data'])
                     data_found = True
 
         if data_found:
-            return JsonResponse(trending_videos, safe=False)  # Return the list
+            return JsonResponse(trending_videos, safe=False)
         else:
             return JsonResponse({'message': f'Trending data for {country_code} is being refreshed or not yet available.'}, status=202)
 
@@ -51,6 +56,7 @@ def analyze_youtube_trends(request):
         return HttpResponseServerError("Error retrieving cached data.")
     finally:
         client.close()
+
 @require_POST
 def suggest_content_ideas(request):
     try:
@@ -108,4 +114,3 @@ def get_content_idea_details(request):
     except Exception as e:
         print(f"Error in get_content_idea_details: {e}")
         return JsonResponse({'error': 'Something went wrong'}, status=500)
-    
