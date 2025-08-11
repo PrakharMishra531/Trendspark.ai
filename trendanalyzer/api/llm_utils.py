@@ -51,37 +51,57 @@ def generate_content_ideas(primary_category, ideal_creator, budget, resources, v
         return None
 
 
+# In api/llm_utils.py
+
 def generate_detailed_idea(topic, description, primary_category, ideal_creator, budget, resources, video_style):
-    """Generates detailed information for a specific content idea using the Groq LLM."""
+    """Generates detailed information using a clean, reliable JSON structure."""
     
-    system_prompt = """
-    You are an expert content idea elaborator... (Your existing detailed prompt)
-    ...
-    Your ENTIRE response MUST be a valid JSON object.
+    # --- UPDATED PROMPT ---
+    # Asks for simple keys without spaces (e.g., 'video_title')
+    system_prompt = f"""
+    You are an expert content idea elaborator. Based on the user's idea, generate a detailed video plan.
+    Your ENTIRE response MUST be a single, valid JSON object with the following snake_case keys:
+
+    {{
+      "video_title": "A short, catchy, final title for the video.",
+      "video_description": "A 2-3 sentence paragraph for the YouTube video description.",
+      "hook": "A one-sentence hook to grab the viewer's attention at the start.",
+      "intro": "A brief paragraph expanding on the hook.",
+      "main_content": [
+        "A list of 4-6 bullet points outlining the core video segments.",
+        "Each point should be a clear, actionable step."
+      ],
+      "outro": "A brief paragraph to conclude the video.",
+      "call_to_action": "A specific call to action (e.g., 'Like, subscribe, and comment...').",
+      "thumbnail_text": "Short, punchy text for the thumbnail (max 5 words).",
+      "hashtags": "A single string of relevant hashtags (e.g., '#Gaming #Challenge #MrBeast')."
+    }}
     """
 
     user_message = f"""
-    Primary Video Category: {primary_category}
-    ... (Your existing user message)
-    Topic: {topic}
-    Brief Description: {description}
+    Generate a detailed plan for the following idea:
+    - Topic: {topic}
+    - Brief Description: {description}
+    - Category: {primary_category}
+    - Inspiration: {ideal_creator}
+    - Budget: {budget}
+    - Resources: {resources}
+    - Style: {video_style}
     """
 
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
     response = client.chat.completions.create(
-        # 1. Model changed as requested
-        model="openai/gpt-oss-120b",
+        model="llama-3.1-70b-versatile", # Using the powerful model for this complex task
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message}
         ],
-        temperature=0.2,
+        temperature=0.4,
         response_format={"type": "json_object"}
     )
 
-    llm_response_content = response.choices[0].message.content
-
     try:
-        return json.loads(llm_response_content)
-    except json.JSONDecodeError as e:
-        print(f"JSON Decode Error: {e}")
+        # This ensures we return a dictionary, not a string of JSON
+        return json.loads(response.choices[0].message.content)
+    except (json.JSONDecodeError, KeyError):
         return None
