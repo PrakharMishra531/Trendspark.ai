@@ -151,7 +151,7 @@ const handleSubmit = async (e) => {
 
     const payload = {
       topic: idea.title,
-      description: idea.short_description,
+      description: idea.description,
       primary_category: formData.primary_category || "General",
       ideal_creator: formData.ideal_creator || "Any popular creator",
       budget: formData.budget,
