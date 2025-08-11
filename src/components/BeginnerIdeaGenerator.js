@@ -72,7 +72,7 @@ const BeginnerIdeaGenerator = () => {
     }
   };
 
-// In BeginnerIdeaGenerator.js
+  // In BeginnerIdeaGenerator.js
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -130,7 +130,7 @@ const handleSubmit = async (e) => {
     // Scroll to results after a short delay
     setTimeout(() => {
       if (resultsRef.current) {
-        results_ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 500);
     
