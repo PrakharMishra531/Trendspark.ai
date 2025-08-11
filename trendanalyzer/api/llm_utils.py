@@ -34,7 +34,7 @@ def generate_content_ideas(primary_category, ideal_creator, budget, resources, v
     """
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": system_prompt},
         ],
@@ -69,7 +69,7 @@ def generate_detailed_idea(topic, description, primary_category, ideal_creator, 
 
     response = client.chat.completions.create(
         # 1. Model changed as requested
-        model="openai/gpt-oss-20b",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message}

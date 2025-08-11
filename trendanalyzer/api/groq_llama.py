@@ -40,7 +40,7 @@ Your entire response MUST be a single, valid JSON object with the following stru
 
     try:
         completion = groq_client.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model="openai/gpt-oss-120b",
             messages=[
               {
                 "role": "system",
