@@ -1,64 +1,58 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseServerError, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseServerError
 from django.views.decorators.http import require_GET, require_POST
 from pymongo import MongoClient
 import os
-from datetime import datetime, timedelta
-import pytz
-from dotenv import load_dotenv
 import json
-from . import llm_utils 
+from . import llm_utils
+
+
+from dotenv import load_dotenv
 
 load_dotenv()
 MONGODB_URI = os.environ.get("MONGODB_URI")
 
 @require_GET
 def analyze_youtube_trends(request):
+    """
+    Fetches the pre-cleaned list of trending videos from the cache.
+    NO CHANGES NEEDED HERE.
+    """
     country_code = request.GET.get('country')
     if not country_code:
         return JsonResponse({'error': 'Missing required query parameter: country'}, status=400)
 
-    client = MongoClient(MONGODB_URI)
-    db = client.get_default_database()
-    collection = db['trending_data_grouped']
-
+    client = None
     try:
-        cached_data = collection.find({'country': country_code})
-        # Note: The original returned the cursor, which is not directly useful. 
-        # Converting to a list to check if it's empty.
-        cached_data_list = list(cached_data) 
-        if not cached_data_list:
-            return JsonResponse({'message': f'No trending data available for {country_code}.'}, status=404)
+        client = MongoClient(MONGODB_URI)
+        db = client.get_default_database()
+        collection = db['trending_data_grouped']
+        
+        cached_doc = collection.find_one(
+            {'country': country_code},
+            {'data': 1, '_id': 0} 
+        )
 
-        trending_videos = []
-        now_utc = datetime.now(pytz.utc)
-        data_found = False
-
-        # Use the list of cached data
-        for item in cached_data_list:
-            # UPDATED: Removed the check for 'type' in item. The new API structure
-            # doesn't include this key at the top level, so the old check would fail.
-            if 'data' in item and 'updated_at' in item:
-                updated_at_utc = item['updated_at'].replace(tzinfo=pytz.utc)
-                if now_utc - updated_at_utc < timedelta(days=1):
-                    if isinstance(item['data'], list):
-                        trending_videos.extend(item['data'])
-                    else:
-                        trending_videos.append(item['data'])
-                    data_found = True
-
-        if data_found:
-            return JsonResponse(trending_videos, safe=False)
+        if cached_doc and 'data' in cached_doc:
+            return JsonResponse(cached_doc['data'], safe=False)
         else:
-            return JsonResponse({'message': f'Trending data for {country_code} is being refreshed or not yet available.'}, status=202)
+            return JsonResponse({'message': f'Trending data for {country_code} not available yet.'}, status=404)
 
     except Exception as e:
-        print(f"Error accessing MongoDB: {e}")
+        print(f"Error accessing MongoDB in analyze_youtube_trends: {e}")
         return HttpResponseServerError("Error retrieving cached data.")
     finally:
-        client.close()
+        if client:
+            client.close()
+
 
 @require_POST
 def suggest_content_ideas(request):
+    """
+    Generates content ideas. If a country code is provided, it uses the
+    PRE-CACHED AI analysis for inspiration.
+    THIS IS THE UPDATED FUNCTION.
+    """
+    client = None
     try:
         data = json.loads(request.body.decode('utf-8'))
         primary_category = data.get('primary_category')
@@ -66,12 +60,26 @@ def suggest_content_ideas(request):
         budget = data.get('budget')
         resources = data.get('resources')
         video_style = data.get('video_style')
+        country_code = data.get('country') 
 
         if not all([primary_category, ideal_creator, budget, resources, video_style]):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
+            return JsonResponse({'error': 'Missing required profile fields'}, status=400)
+
+        trend_analysis_data = None
+        if country_code:
+            client = MongoClient(MONGODB_URI)
+            db = client.get_default_database()
+            collection = db['trending_data_grouped']
+            cached_doc = collection.find_one({'country': country_code})
+            
+            if cached_doc and 'ai_analysis' in cached_doc:
+                trend_analysis_data = cached_doc.get('ai_analysis')
+            else:
+                return JsonResponse({'error': f'Analysis for {country_code} not available yet.'}, status=404)
 
         content_ideas = llm_utils.generate_content_ideas(
-            primary_category, ideal_creator, budget, resources, video_style
+            primary_category, ideal_creator, budget, resources, video_style,
+            trend_analysis=trend_analysis_data
         )
 
         if content_ideas:
@@ -83,10 +91,18 @@ def suggest_content_ideas(request):
         return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
     except Exception as e:
         print(f"Error in suggest_content_ideas: {e}")
-        return JsonResponse({'error': 'Something went wrong'}, status=500)
+        return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
+    finally:
+        if client:
+            client.close()
+
 
 @require_POST
 def get_content_idea_details(request):
+    """
+    This function is for a separate feature and is not affected.
+    NO CHANGES NEEDED HERE.
+    """
     try:
         data = json.loads(request.body.decode('utf-8'))
         topic = data.get('topic')
