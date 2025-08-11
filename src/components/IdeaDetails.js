@@ -2,18 +2,7 @@ import React, { useEffect } from 'react';
 import './IdeaDetails.css';
 
 const IdeaDetails = ({ details, onClose }) => {
-  // Prevent scrolling on body when modal is open
-  let details = detailsProp;
-
-  // Check if the received prop is a string. If so, parse it into an object.
-  if (typeof details === 'string') {
-    try {
-      details = JSON.parse(details);
-    } catch (e) {
-      console.error("Failed to parse details prop string:", e);
-      return <div>Error displaying details.</div>; // Show an error message
-    }
-  }
+  // All hooks must be at the top level
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -21,7 +10,6 @@ const IdeaDetails = ({ details, onClose }) => {
     };
   }, []);
 
-  // Handle escape key to close modal
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.key === 'Escape') onClose();
@@ -32,33 +20,29 @@ const IdeaDetails = ({ details, onClose }) => {
     };
   }, [onClose]);
 
-  // Ensure we have details to render
   if (!details) {
     return null;
   }
 
+  // With a clean API, the component becomes simple and readable
   return (
     <div className="idea-details-overlay" onClick={onClose}>
       <div className="idea-details-content" onClick={(e) => e.stopPropagation()}>
         <button className="close-button" onClick={onClose}>×</button>
-
-        {/* --- UPDATED SECTION --- */}
-        {/* We now get all data from the 'details' prop and use bracket notation */}
         
-        <h2>{details['Video Title']}</h2>
-        <p className="description">{details['Video Description']}</p>
+        <h2>{details.video_title}</h2>
+        <p className="description">{details.video_description}</p>
 
         <div className="detail-section">
           <h3>Script Outline</h3>
-          <p><strong>Hook:</strong> {details['Hook']}</p>
-          <p><strong>Intro:</strong> {details['Intro']}</p>
+          <p><strong>Hook:</strong> {details.hook}</p>
+          <p><strong>Intro:</strong> {details.intro}</p>
         </div>
 
         <div className="detail-section">
           <h3>Main Content (Steps)</h3>
           <ul>
-            {/* Map over the 'Main Content' array to create a list */}
-            {details['Main Content']?.map((step, index) => (
+            {details.main_content?.map((step, index) => (
               <li key={index}>{step}</li>
             ))}
           </ul>
@@ -66,16 +50,14 @@ const IdeaDetails = ({ details, onClose }) => {
         
         <div className="detail-section">
           <h3>Conclusion</h3>
-          <p><strong>Outro:</strong> {details['Outro']}</p>
-          <p><strong>Call to Action:</strong> {details['Call to Action']}</p>
+          <p><strong>Outro:</strong> {details.outro}</p>
+          <p><strong>Call to Action:</strong> {details.call_to_action}</p>
         </div>
 
         <div className="detail-section">
           <h3>Video Metadata</h3>
-          <p><strong>Thumbnail Text:</strong> {details['Thumbnail Text']}</p>
-          <p><strong>Hashtags:</strong> {details['Hashtags']}</p>
-          {/* We can render the video tags in a more visual way if you like */}
-          <p><strong>Video Tags:</strong> {details['Video Tags']?.join(', ')}</p>
+          <p><strong>Thumbnail Text:</strong> {details.thumbnail_text}</p>
+          <p><strong>Hashtags:</strong> {details.hashtags}</p>
         </div>
 
       </div>
