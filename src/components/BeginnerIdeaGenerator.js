@@ -83,11 +83,11 @@ const handleSubmit = async (e) => {
   setIdeaDetails(null);
 
   const payload = {
-    primary_category: formData.primary_category,
-    ideal_creator: formData.ideal_creator,
-    budget: formData.budget,
-    resources: formData.resources.join(','),
-    video_style: formData.video_style,
+    primary_category: formData.primary_category || "General",
+    ideal_creator: formData.ideal_creator || "Any popular creator",
+    budget: formData.budget, // Will always have a value from the radio buttons
+    resources: formData.resources.join(',') || "basic setup", // Handles empty checkbox array
+    video_style: formData.video_style, // Will always have a value from the dropdown
     country: formData.country
   };
 
@@ -150,12 +150,12 @@ const handleSubmit = async (e) => {
     setIdeaDetails(null);
 
     const payload = {
-      topic: idea.topic,
+      topic: idea.title,
       description: idea.short_description,
-      primary_category: formData.primary_category,
-      ideal_creator: formData.ideal_creator,
+      primary_category: formData.primary_category || "General",
+      ideal_creator: formData.ideal_creator || "Any popular creator",
       budget: formData.budget,
-      resources: formData.resources.join(','),
+      resources: formData.resources.join(',') || "basic setup",
       video_style: formData.video_style
     };
 
