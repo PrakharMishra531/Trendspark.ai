@@ -15,7 +15,6 @@ MONGODB_URI = os.environ.get("MONGODB_URI")
 def analyze_youtube_trends(request):
     """
     Fetches the pre-cleaned list of trending videos from the cache.
-    NO CHANGES NEEDED HERE.
     """
     country_code = request.GET.get('country')
     if not country_code:
@@ -50,7 +49,6 @@ def suggest_content_ideas(request):
     """
     Generates content ideas. If a country code is provided, it uses the
     PRE-CACHED AI analysis for inspiration.
-    THIS IS THE UPDATED FUNCTION.
     """
     client = None
     try:

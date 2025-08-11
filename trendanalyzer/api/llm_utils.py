@@ -2,7 +2,7 @@ import os
 import json
 from groq import Groq
 
-def generate_content_ideas(primary_category, ideal_creator, budget, resources, video_style):
+def generate_content_ideas(primary_category, ideal_creator, budget, resources, video_style,trend_analysis=None):
     """
     Generates content ideas using the Groq LLM based on user input.
     """
