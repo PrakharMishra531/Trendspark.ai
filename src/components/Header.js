@@ -18,7 +18,7 @@ const Header = () => {
     <header className="app-header">
       <div className="header-content">
         <h1>
-          <span style={{ color: "#4f46e5" }}>✦</span> Trendspark AI
+          <span style={{ color: "#4f46e5" }}>✦</span> Trendspark AI - Dynamic Content Ideation Using Context-Aware LLMs
         </h1>
         
         <nav>

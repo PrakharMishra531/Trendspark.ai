@@ -149,7 +149,7 @@ const BeginnerIdeaGenerator = () => {
     setIdeaDetails(null);
 
     const payload = {
-      topic: idea.title,
+      topic: idea.topic,
       description: idea.short_description,
       primary_category: formData.primary_category,
       ideal_creator: formData.ideal_creator,
