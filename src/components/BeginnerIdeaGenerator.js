@@ -139,11 +139,15 @@ const BeginnerIdeaGenerator = () => {
   };
 
   const handleCardClick = async (idea) => {
+    if (!formData.primary_category || !formData.ideal_creator) {
+      setError("Please ensure 'Primary Category' and 'Ideal Creator' fields are filled out before getting details.");
+      return; // Stop the function before it makes the API call
+    }
+    
     setSelectedIdea(idea);
     setDetailsLoading(true);
     setIdeaDetails(null);
 
-    // Prepare data for API
     const payload = {
       topic: idea.title,
       description: idea.short_description,
@@ -153,8 +157,6 @@ const BeginnerIdeaGenerator = () => {
       resources: formData.resources.join(','),
       video_style: formData.video_style
     };
-
-    console.log("Payload being sent:", payload); // Add this line
 
     try {
       if (!csrfToken) {  // Ensure CSRF token is available
@@ -354,7 +356,7 @@ const BeginnerIdeaGenerator = () => {
             {ideas.map((idea, index) => (
               <IdeaCard
                 key={index}
-                title={idea.topic}
+                title={idea.title}
                 description={idea.short_description}
                 onClick={() => handleCardClick(idea)}
               />
