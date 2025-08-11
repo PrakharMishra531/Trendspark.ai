@@ -117,9 +117,7 @@ const handleSubmit = async (e) => {
     // --- THIS IS THE FIX ---
     // We will only accept ideas that have BOTH a title and a description.
     if (result.ideas && Array.isArray(result.ideas)) {
-      const completeIdeas = result.ideas.filter(
-        idea => idea.title && idea.short_description
-      );
+      const completeIdeas = result.ideas.filter(idea => idea.title && idea.description);
       setIdeas(completeIdeas);
     } else {
       // If there's no 'ideas' array, set it to an empty array.
