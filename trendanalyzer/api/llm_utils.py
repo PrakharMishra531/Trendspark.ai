@@ -91,12 +91,11 @@ def generate_detailed_idea(topic, description, primary_category, ideal_creator, 
 
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
     response = client.chat.completions.create(
-        model="llama-3.1-70b-versatile", # Using the powerful model for this complex task
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message}
         ],
-        temperature=0.4,
+        temperature=0.2,
         response_format={"type": "json_object"}
     )
 
