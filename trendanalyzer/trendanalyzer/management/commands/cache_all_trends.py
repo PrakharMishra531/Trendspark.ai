@@ -1,10 +1,8 @@
 import os
 from django.core.management.base import BaseCommand
 from pymongo import MongoClient
-import json
-from api import youtubeSummary
-from api import groq_llama
-from datetime import datetime, timedelta
+from api import youtubeSummary 
+from datetime import datetime
 import pytz
 from dotenv import load_dotenv
 
@@ -12,43 +10,40 @@ load_dotenv()
 MONGODB_URI = os.environ.get("MONGODB_URI")
 
 class Command(BaseCommand):
-    help = 'Fetches and caches trending YouTube data for specified countries and types'
+    help = 'Fetches and caches clean trending YouTube data for specified countries'
 
     def handle(self, *args, **options):
-        countries_to_cache = ['US'] 
-        types_to_cache = ['gaming', 'music']
-
+        countries_to_cache = ['US', 'IN', 'GB', 'JP'] 
+        self.stdout.write("Starting clean cache process...")
         for country in countries_to_cache:
-            for content_type in types_to_cache:
-                self.cache_trends(country, content_type)
+            self.cache_country_trends(country)
+        self.stdout.write(self.style.SUCCESS('Successfully completed caching process.'))
 
-        self.stdout.write(self.style.SUCCESS('Successfully cached trending data for all specified countries and types.'))
-
-    def cache_trends(self, country, content_type):
+    def cache_country_trends(self, country):
+        client = None
         try:
-            self.stdout.write(f"Fetching and caching trends for {country} - {content_type}...")
-            trending_data = youtubeSummary.get_trending_videos(country, content_type)
-            if not trending_data:
-                self.stdout.write(self.style.WARNING(f"No trending data found for {country} - {content_type}."))
-                return
+            self.stdout.write(f"Processing country: {country}...")
 
-            llama_response = groq_llama.llama(json.dumps(trending_data))
-            analysis_results = json.loads(llama_response)
+            cleaned_trending_data = youtubeSummary.get_trending_videos(country)
+            
+            if not cleaned_trending_data:
+                self.stdout.write(self.style.WARNING(f"No data for {country}."))
+                return
 
             client = MongoClient(MONGODB_URI)
             db = client.get_default_database()
             collection = db['trending_data_grouped'] 
 
-            # Store or update the data
             update_result = collection.update_one(
-                {'country': country, 'type': content_type},
-                {'$set': {'data': analysis_results, 'updated_at': datetime.now(pytz.utc)}},
+                {'country': country},
+                {'$set': {'data': cleaned_trending_data, 'updated_at': datetime.now(pytz.utc)}},
                 upsert=True
             )
-            self.stdout.write(self.style.SUCCESS(f"Cached data for {country} - {content_type}. Updated: {update_result.modified_count}, Upserted: {update_result.upserted_id}"))
+            
+            self.stdout.write(self.style.SUCCESS(f"Successfully cached clean data for {country}."))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Error fetching and caching {country} - {content_type}: {e}"))
+            self.stdout.write(self.style.ERROR(f"Error for {country}: {e}"))
         finally:
-            if 'client' in locals():
+            if client:
                 client.close()

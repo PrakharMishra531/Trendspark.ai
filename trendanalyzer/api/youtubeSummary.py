@@ -1,12 +1,15 @@
 import requests
 import os
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 api_key = os.environ.get("RAPID_API_KEY")
 
 def get_trending_videos(geo_code: str):
+    """
+    Fetches trending YouTube videos and returns a clean list of dictionaries
+    containing only the essential information.
+    """
     url = "https://yt-api.p.rapidapi.com/trending"
     querystring = {"geo": geo_code}
     headers = {
@@ -18,26 +21,31 @@ def get_trending_videos(geo_code: str):
         response = requests.get(url, headers=headers, params=querystring)
         response.raise_for_status()
         
-        data = response.json()
-        trending_videos = data.get('data', [])[:10]
+        raw_data = response.json().get('data', [])
         
-        return trending_videos
+        cleaned_videos = []
+        for video in raw_data[:10]:
+            try:
+                thumbnail_url = video.get('thumbnail', [{}])[0].get('url', '')
+            except (IndexError, AttributeError):
+                thumbnail_url = ''
+
+            clean_video_data = {
+                'videoId': video.get('videoId'),
+                'title': video.get('title'),
+                'description': video.get('description'),
+                'thumbnail': thumbnail_url,
+                'channelTitle': video.get('channelTitle'),
+                'viewCount': video.get('viewCount'),
+                'publishedText': video.get('publishedTimeText')
+            }
+            cleaned_videos.append(clean_video_data)
+        
+        return cleaned_videos
 
     except requests.exceptions.RequestException as e:
         print(f"API request failed: {e}")
         return []
-    except json.JSONDecodeError:
-        print("Failed to parse JSON from the API response.")
+    except Exception as e:
+        print(f"An error occurred in get_trending_videos: {e}")
         return []
-
-if __name__ == "__main__":
-    if not api_key:
-        print("Error: The 'RAPID_API_KEY' environment variable is not set.")
-    else:
-        us_videos = get_trending_videos("US")
-        if us_videos:
-            print("--- Top 10 Trending in US ---")
-            for i, video in enumerate(us_videos, 1):
-                print(f"{i}. {video.get('title', 'N/A')}")
-
-
