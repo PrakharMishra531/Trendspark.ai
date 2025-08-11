@@ -3,6 +3,17 @@ import './IdeaDetails.css';
 
 const IdeaDetails = ({ details, onClose }) => {
   // Prevent scrolling on body when modal is open
+  let details = detailsProp;
+
+  // Check if the received prop is a string. If so, parse it into an object.
+  if (typeof details === 'string') {
+    try {
+      details = JSON.parse(details);
+    } catch (e) {
+      console.error("Failed to parse details prop string:", e);
+      return <div>Error displaying details.</div>; // Show an error message
+    }
+  }
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
