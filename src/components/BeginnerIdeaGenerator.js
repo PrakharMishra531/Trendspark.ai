@@ -72,71 +72,74 @@ const BeginnerIdeaGenerator = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setIdeas([]);
-    setSelectedIdea(null);
-    setIdeaDetails(null);
+// In BeginnerIdeaGenerator.js
 
-    // Prepare data for API
-    const payload = {
-      primary_category: formData.primary_category,
-      ideal_creator: formData.ideal_creator,
-      budget: formData.budget,
-      resources: formData.resources.join(','), // Send as comma-separated string
-      video_style: formData.video_style,
-      country:"US"
-    };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+  setIdeas([]);
+  setSelectedIdea(null);
+  setIdeaDetails(null);
 
-    try {
-      if (!csrfToken) {
-        // Display clear error and guidance
-        setError("CSRF token is missing! Please refresh the page or log in again.");
-        console.error("CSRF token missing when submitting idea generator form");
-        setLoading(false);
-        return;
-      }
-
-      const response = await customFetch('https://trendspark-ai.onrender.com/api/suggest-ideas/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken, // Include CSRF token in the request header
-        },
-        body: JSON.stringify(payload),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      setIdeas(result.ideas || []);
-      
-      // Scroll to results section after ideas are loaded
-      setTimeout(() => {
-        if (resultsRef.current && result.ideas?.length > 0) {
-          resultsRef.current.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start'
-          });
-        }
-      }, 500); // Add a small delay to ensure DOM has updated
-      
-    } catch (err) {
-      // Improved error handling
-      let errorMessage = err.message;
-      if (err.message.includes('403')) {
-        errorMessage = "Authorization error (403): CSRF verification failed. Please refresh the page.";
-      }
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  const payload = {
+    primary_category: formData.primary_category,
+    ideal_creator: formData.ideal_creator,
+    budget: formData.budget,
+    resources: formData.resources.join(','),
+    video_style: formData.video_style,
+    country: formData.country
   };
+
+  try {
+    if (!csrfToken) {
+      setError("CSRF token is missing! Please refresh the page or log in again.");
+      setLoading(false);
+      return;
+    }
+
+    const response = await customFetch('https://trendspark-ai.onrender.com/api/suggest-ideas/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify(payload),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // --- THIS IS THE FIX ---
+    // We will only accept ideas that have BOTH a title and a description.
+    if (result.ideas && Array.isArray(result.ideas)) {
+      const completeIdeas = result.ideas.filter(
+        idea => idea.title && idea.short_description
+      );
+      setIdeas(completeIdeas);
+    } else {
+      // If there's no 'ideas' array, set it to an empty array.
+      setIdeas([]);
+    }
+    // --- END OF FIX ---
+
+    // Scroll to results after a short delay
+    setTimeout(() => {
+      if (resultsRef.current) {
+        results_ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 500);
+    
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCardClick = async (idea) => {
     if (!formData.primary_category || !formData.ideal_creator) {
