@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Card from './Card';
-import { useAuth } from './AuthContext'; // Import the AuthContext
+import { useAuth } from './AuthContext';
 import './HomePage.css';
 import customFetch from './api'; 
 
@@ -14,9 +14,9 @@ const HomePage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isAuthenticated } = useAuth(); // Get isAuthenticated from AuthContext
+  const { isAuthenticated } = useAuth(); 
 
-  // Function to check and retrieve cached data
+  
   const getCachedData = () => {
     const cachedData = localStorage.getItem(CACHE_KEY);
 
@@ -57,7 +57,6 @@ const HomePage = () => {
         const result = await response.json();
         console.log('Data received from backend:', result);
 
-        // Store data in localStorage with timestamp
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify({

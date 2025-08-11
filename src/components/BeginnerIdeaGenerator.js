@@ -86,7 +86,8 @@ const BeginnerIdeaGenerator = () => {
       ideal_creator: formData.ideal_creator,
       budget: formData.budget,
       resources: formData.resources.join(','), // Send as comma-separated string
-      video_style: formData.video_style
+      video_style: formData.video_style,
+      country:"US"
     };
 
     try {

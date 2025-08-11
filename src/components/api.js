@@ -1,6 +1,6 @@
 const customFetch = async (url, options = {}) => {
     const defaultOptions = {
-      credentials: 'include', // This ensures cookies are sent with every request
+      credentials: 'include', 
       headers: {
         'Content-Type': 'application/json',
       },

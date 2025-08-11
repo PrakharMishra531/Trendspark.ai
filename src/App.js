@@ -46,7 +46,7 @@ function AppContent() {
         </Routes>
       </main>
       <footer>
-        <p>Made By Prakhar, Ashish, Pramukh, Ashwin</p>
+        <p>Made By Prakhar, Ashish, Pramukh</p>
       </footer>
     </div>
   );

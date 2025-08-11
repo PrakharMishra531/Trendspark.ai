@@ -7,21 +7,19 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [csrfToken, setCsrfToken] = useState(null); // <<< Add state for CSRF token
+  const [csrfToken, setCsrfToken] = useState(null); 
 
-  // Check authentication status and get CSRF token on load
   useEffect(() => {
     const checkAuth = async () => {
-      setLoading(true); // Ensure loading is true at the start
+      setLoading(true);
       try {
-        const response = await customFetch('https://trendspark-ai.onrender.com/auth/status/'); // GET request
+        const response = await customFetch('https://trendspark-ai.onrender.com/auth/status/');
         const data = await response.json();
 
         if (response.ok) {
-          setCsrfToken(data.csrfToken); // <<< Store the token from response
+          setCsrfToken(data.csrfToken); 
           setCsrfTokenGlobally(data.csrfToken);
-          if (data.isAuthenticated && data.username) { // Check user data exists
-             // Assuming the response includes user details when authenticated
+          if (data.isAuthenticated && data.username) {
              setUser({
                 id: data.id,
                 username: data.username,
@@ -34,16 +32,15 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
           }
         } else {
-           // Handle non-ok response from /auth/status/
            console.error('Auth status check failed:', data);
            setUser(null);
-           setCsrfToken(null); // Clear token on failure
+           setCsrfToken(null);
            setCsrfTokenGlobally(null); 
         }
       } catch (err) {
         console.error('Auth check error:', err);
         setUser(null);
-        setCsrfToken(null); // Clear token on error
+        setCsrfToken(null); 
         setCsrfTokenGlobally(null); 
       } finally {
         setLoading(false);
@@ -51,17 +48,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuth();
-  }, []); // Run only once on mount
+  }, []);
 
-  // Helper to get headers with CSRF token
   const getHeaders = () => {
     const headers = {
       'Content-Type': 'application/json',
     };
     if (csrfToken) {
-      headers['X-CSRFToken'] = csrfToken; // <<< Add header using stored token
+      headers['X-CSRFToken'] = csrfToken; 
     } else {
-      // This should ideally not happen if checkAuth ran successfully
       console.warn('CSRF token not available for request.');
     }
     return headers;
@@ -70,25 +65,24 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (username, password) => {
     setError(null);
-    if (!csrfToken) { // Prevent request if token is missing
+    if (!csrfToken) { 
         setError("CSRF token not loaded. Please refresh.");
         return false;
     }
     try {
       const response = await customFetch('https://trendspark-ai.onrender.com/auth/login/', {
         method: 'POST',
-        headers: getHeaders(), // <<< Use helper to get headers
+        headers: getHeaders(), 
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json(); // Try parsing JSON regardless of status for error messages
+      const data = await response.json();
 
       if (!response.ok) {
-        // Use error message from backend if available
         throw new Error(data.detail || data.error || 'Login failed');
       }
 
-      setUser(data); // Assuming login returns full user data
+      setUser(data); 
       return true;
     } catch (err) {
       setError(err.message);
@@ -97,32 +91,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Signup function (ensure you pass all required fields from your form)
+
   const signup = async (userData) => {
     setError(null);
-     if (!csrfToken) { // Prevent request if token is missing
+     if (!csrfToken) {
         setError("CSRF token not loaded. Please refresh.");
         return false;
     }
-    // Example: const { username, email, password, password2, firstName, lastName } = userData;
+
     try {
       const response = await customFetch('https://trendspark-ai.onrender.com/auth/register/', {
         method: 'POST',
-        headers: getHeaders(), // <<< Use helper to get headers
-        body: JSON.stringify(userData), // Send all required fields
+        headers: getHeaders(),
+        body: JSON.stringify(userData),
       });
 
-      const data = await response.json(); // Try parsing JSON regardless of status
+      const data = await response.json(); 
 
       if (!response.ok) {
-         // Try to get specific field errors from DRF
+
          const messages = Object.entries(data)
             .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
             .join('; ');
          throw new Error(messages || 'Registration failed');
       }
 
-      // Backend automatically logs in on successful registration
       setUser(data);
       return true;
     } catch (err) {
@@ -138,7 +131,7 @@ export const AuthProvider = ({ children }) => {
   
     if (!csrfToken) {
       console.warn("⚠️ CSRF token missing for logout! Retrying...");
-      await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
   
     if (!csrfToken) {
@@ -178,15 +171,11 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    isAuthenticated: !!user && !loading, // Consider loading state for isAuthenticated
+    isAuthenticated: !!user && !loading, 
     csrfToken,
     getHeaders
   };
 
-  // Render children only after initial loading is complete? Optional.
-  // if (loading) {
-  //   return <div>Loading authentication...</div>;
-  // }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
