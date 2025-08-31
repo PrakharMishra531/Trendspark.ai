@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       setLoading(true);
       try {
-        const response = await customFetch('https://trendspark-ai.onrender.com/auth/status/');
+        const response = await customFetch('http://34.207.216.68/auth/status/');
         const data = await response.json();
 
         if (response.ok) {
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         return false;
     }
     try {
-      const response = await customFetch('https://trendspark-ai.onrender.com/auth/login/', {
+      const response = await customFetch('http://34.207.216.68/auth/login/', {
         method: 'POST',
         headers: getHeaders(), 
         body: JSON.stringify({ username, password }),
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const response = await customFetch('https://trendspark-ai.onrender.com/auth/register/', {
+      const response = await customFetch('http://34.207.216.68/auth/register/', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(userData),
@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }) => {
   
     try {
       console.log("🚀 Sending logout request with CSRF token:", csrfToken);
-      const response = await customFetch('https://trendspark-ai.onrender.com/auth/logout/', {
+      const response = await customFetch('http://34.207.216.68/auth/logout/', {
         method: 'POST',
         headers: getHeaders(),
       });

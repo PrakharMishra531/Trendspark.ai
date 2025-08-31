@@ -48,7 +48,7 @@ const HomePage = () => {
       }
 
       try {
-        const response = await customFetch('https://trendspark-ai.onrender.com/api/analyze/?country=US');
+        const response = await customFetch('http://34.207.216.68/api/analyze/?country=US');
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -83,7 +83,7 @@ const HomePage = () => {
     return (
       <div className="error">
         <p>Error loading data: {error}</p>
-        <p>Make sure your Django backend is running at https://trendspark-ai.onrender.com</p>
+        <p>Make sure your Django backend is running at your EC2 instance</p>
       </div>
     );
 
