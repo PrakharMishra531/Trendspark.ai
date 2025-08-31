@@ -35,7 +35,7 @@ class Command(BaseCommand):
             self.stdout.write(f"  -> Generating AI analysis for {country}...")
             analysis_str = groq_llama.get_ai_analysis(cleaned_trending_data)
             analysis_json = json.loads(analysis_str)
-            # --- END OF NEW LOGIC ---
+          
 
             client = MongoClient(MONGODB_URI)
             db = client.get_default_database()
@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 {'country': country},
                 {'$set': {
                     'data': cleaned_trending_data, 
-                    'ai_analysis': analysis_json, # The new cached field
+                    'ai_analysis': analysis_json, 
                     'updated_at': datetime.now(pytz.utc)
                 }},
                 upsert=True

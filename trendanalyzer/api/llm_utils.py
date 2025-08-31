@@ -56,8 +56,6 @@ def generate_content_ideas(primary_category, ideal_creator, budget, resources, v
 def generate_detailed_idea(topic, description, primary_category, ideal_creator, budget, resources, video_style):
     """Generates detailed information using a clean, reliable JSON structure."""
     
-    # --- UPDATED PROMPT ---
-    # Asks for simple keys without spaces (e.g., 'video_title')
     system_prompt = f"""
     You are an expert content idea elaborator. Based on the user's idea, generate a detailed video plan.
     Your ENTIRE response MUST be a single, valid JSON object with the following snake_case keys:
@@ -100,7 +98,6 @@ def generate_detailed_idea(topic, description, primary_category, ideal_creator, 
     )
 
     try:
-        # This ensures we return a dictionary, not a string of JSON
         return json.loads(response.choices[0].message.content)
     except (json.JSONDecodeError, KeyError):
         return None
