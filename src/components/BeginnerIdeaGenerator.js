@@ -104,6 +104,14 @@ const handleSubmit = async (e) => {
     console.log('🔐 User authenticated:', isAuthenticated);
     console.log('👤 User:', user?.username);
     
+    // Check if we have session cookies
+    if (!document.cookie) {
+      console.log('❌ No session cookies found - forcing re-authentication');
+      setError("Session expired. Please log in again to continue.");
+      setLoading(false);
+      return;
+    }
+    
     // Force refresh CSRF token before making the API call
     console.log('🔄 Refreshing CSRF token...');
     try {
