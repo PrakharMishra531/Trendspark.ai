@@ -104,26 +104,41 @@ const handleSubmit = async (e) => {
     console.log('🔐 User authenticated:', isAuthenticated);
     console.log('👤 User:', user?.username);
     
-    // Check if we have session cookies
+    // Check if we have session cookies - but don't fail immediately
     if (!document.cookie) {
-      console.log('❌ No session cookies found - forcing re-authentication');
-      setError("Session expired. Please log in again to continue.");
-      setLoading(false);
-      return;
+      console.log('⚠️ No session cookies found - attempting to refresh authentication');
+      // Try to refresh authentication status first
+      try {
+        const authResponse = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          console.log('✅ Auth status refreshed:', authData);
+          console.log('🍪 Cookies after auth refresh:', document.cookie);
+        }
+      } catch (authErr) {
+        console.log('❌ Failed to refresh auth status:', authErr.message);
+      }
     }
     
-    // Force refresh CSRF token before making the API call
-    console.log('🔄 Refreshing CSRF token...');
+    // Check authentication status before making the API call
+    console.log('� Checking current authentication status...');
     try {
-      const tokenResponse = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
-      if (tokenResponse.ok) {
-        const tokenData = await tokenResponse.json();
-        console.log('✅ New CSRF token received:', tokenData.csrfToken);
-        console.log('🔄 Updating CSRF token in context...');
-        // The auth context should automatically update, let's continue with the API call
+      const authCheckResponse = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
+      const authData = await authCheckResponse.json();
+      console.log('🔐 Auth check result:', authData);
+      console.log('🍪 Cookies after auth check:', document.cookie);
+      
+      if (!authCheckResponse.ok || !authData.isAuthenticated) {
+        console.log('❌ User not properly authenticated, redirecting to login');
+        setError("Authentication required. Please log in again.");
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.log('❌ Failed to refresh token:', err.message);
+    } catch (authErr) {
+      console.log('❌ Auth check failed:', authErr.message);
+      setError("Unable to verify authentication. Please log in again.");
+      setLoading(false);
+      return;
     }
     
     const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
@@ -134,9 +149,23 @@ const handleSubmit = async (e) => {
     });
     
     console.log('✅ POST request status:', response.status);
+    console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('🍪 Cookies before response processing:', document.cookie);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      // Try to get more detailed error information
+      let errorMessage = `HTTP error! Status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        console.log('❌ Error response data:', errorData);
+        errorMessage += ` - ${errorData.detail || errorData.error || JSON.stringify(errorData)}`;
+      } catch (parseErr) {
+        console.log('❌ Could not parse error response:', parseErr.message);
+        const errorText = await response.text();
+        console.log('❌ Raw error response:', errorText);
+        errorMessage += ` - ${errorText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
