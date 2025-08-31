@@ -74,10 +74,9 @@ const handleSubmit = async (e) => {
   const payload = {
     primary_category: formData.primary_category || "General",
     ideal_creator: formData.ideal_creator || "Any popular creator",
-    budget: formData.budget, // Will always have a value from the radio buttons
-    resources: formData.resources.join(',') || "basic setup", // Handles empty checkbox array
-    video_style: formData.video_style, // Will always have a value from the dropdown
-    country: formData.country
+    budget: formData.budget,
+    resources: formData.resources.join(', ') || "basic setup",
+    video_style: formData.video_style
   };
 
   try {
@@ -98,14 +97,6 @@ const handleSubmit = async (e) => {
       setLoading(false);
       return;
     }
-
-    // Debug authentication state
-    console.log('🔍 Debug Info:');
-    console.log('CSRF Token:', csrfToken);
-    console.log('Headers:', getHeaders());
-    console.log('User authenticated:', isAuthenticated);
-    console.log('User:', user);
-    console.log('Payload:', payload);
 
     const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
       method: 'POST',
@@ -161,7 +152,7 @@ const handleSubmit = async (e) => {
       primary_category: formData.primary_category || "General",
       ideal_creator: formData.ideal_creator || "Any popular creator",
       budget: formData.budget,
-      resources: formData.resources.join(',') || "basic setup",
+      resources: formData.resources.join(', ') || "basic setup",
       video_style: formData.video_style
     };
 
@@ -207,21 +198,6 @@ const handleSubmit = async (e) => {
     
     <div className="beginner-idea-generator">
       <h2>Content Idea Generator</h2>
-      
-      {/* Authentication Status */}
-      <div style={{ 
-        padding: '10px', 
-        margin: '10px 0', 
-        borderRadius: '5px',
-        backgroundColor: isAuthenticated ? '#d4edda' : '#f8d7da',
-        color: isAuthenticated ? '#155724' : '#721c24',
-        border: `1px solid ${isAuthenticated ? '#c3e6cb' : '#f5c6cb'}`
-      }}>
-        {isAuthenticated ? 
-          `✅ Logged in as: ${user?.username || 'User'}` : 
-          '❌ Not authenticated - Please log in first'
-        }
-      </div>
 
       <form onSubmit={handleSubmit} className="idea-form">
         <div className="form-group">
