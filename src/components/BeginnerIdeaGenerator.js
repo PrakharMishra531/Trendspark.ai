@@ -98,12 +98,25 @@ const handleSubmit = async (e) => {
       return;
     }
 
+    console.log('🔍 Testing suggest-ideas API...');
+    console.log('📤 Sending payload:', payload);
+    console.log('📋 Headers:', getHeaders());
+    
+    // Try without CSRF token first to see if that's the issue
+    const testHeaders = {
+      'Content-Type': 'application/json'
+    };
+    
+    console.log('🧪 Testing with basic headers:', testHeaders);
+    
     const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
       method: 'POST',
-      headers: getHeaders(),
+      headers: testHeaders,
       body: JSON.stringify(payload),
       credentials: 'include',
     });
+    
+    console.log('✅ Suggest-ideas API response status:', response.status);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);

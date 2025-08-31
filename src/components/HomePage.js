@@ -48,7 +48,9 @@ const HomePage = () => {
       }
 
       try {
+        console.log('🔍 Testing analyze API...');
         const response = await customFetch('https://trendspark.prakharmishra.tech/api/analyze/?country=US');
+        console.log('✅ Analyze API response status:', response.status);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
