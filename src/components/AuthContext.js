@@ -8,12 +8,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [csrfToken, setCsrfToken] = useState(null); 
-
+  
   useEffect(() => {
     const checkAuth = async () => {
       setLoading(true);
       try {
-        const response = await customFetch('http://34.207.216.68/auth/status/');
+        const response = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
         const data = await response.json();
 
         if (response.ok) {
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         return false;
     }
     try {
-      const response = await customFetch('http://34.207.216.68/auth/login/', {
+      const response = await customFetch('https://trendspark.prakharmishra.tech/auth/login/', {
         method: 'POST',
         headers: getHeaders(), 
         body: JSON.stringify({ username, password }),
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const response = await customFetch('http://34.207.216.68/auth/register/', {
+      const response = await customFetch('https://trendspark.prakharmishra.tech/auth/register/', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(userData),
@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }) => {
   
     try {
       console.log("🚀 Sending logout request with CSRF token:", csrfToken);
-      const response = await customFetch('http://34.207.216.68/auth/logout/', {
+      const response = await customFetch('https://trendspark.prakharmishra.tech/auth/logout/', {
         method: 'POST',
         headers: getHeaders(),
       });

@@ -98,7 +98,7 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    const response = await customFetch('http://34.207.216.68/api/suggest-ideas/', {
+    const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ const handleSubmit = async (e) => {
         return;
       }
 
-      const response = await customFetch('http://34.207.216.68/api/get-idea-details/', {
+      const response = await customFetch('https://trendspark.prakharmishra.tech/api/get-idea-details/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

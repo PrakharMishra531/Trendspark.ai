@@ -48,7 +48,7 @@ const HomePage = () => {
       }
 
       try {
-        const response = await customFetch('http://34.207.216.68/api/analyze/?country=US');
+        const response = await customFetch('https://trendspark.prakharmishra.tech/api/analyze/?country=US');
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
