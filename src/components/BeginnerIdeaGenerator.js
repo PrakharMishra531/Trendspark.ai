@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 // Remove Card import since we'll create our own
 import IdeaDetails from './IdeaDetails';
 import './BeginnerIdeaGenerator.css';
 import customFetch from './api';
-import { getCsrfTokenGlobally } from './csrfTokenStorage';
 import { useAuth } from './AuthContext';
 
 // Custom IdeaCard component with Vercel-inspired styling
@@ -24,19 +23,7 @@ const IdeaCard = ({ title, description, onClick }) => {
 
 const BeginnerIdeaGenerator = () => {
   
-  const { getHeaders } = useAuth();
-  const [csrfToken, setCsrfToken] = useState(getCsrfTokenGlobally()); // Initialize with the current token
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const token = getCsrfTokenGlobally();
-      if (token !== csrfToken) {
-        setCsrfToken(token); // Update state if the token changes
-      }
-    }, 1000); // Check for updates every second (adjust as needed)
-
-    return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [csrfToken]);
+  const { getHeaders, loading: authLoading, csrfToken } = useAuth();
 
   const [formData, setFormData] = useState({
     primary_category: '',
@@ -96,6 +83,12 @@ const handleSubmit = async (e) => {
   try {
     if (!csrfToken) {
       setError("CSRF token is missing! Please refresh the page or log in again.");
+      setLoading(false);
+      return;
+    }
+
+    if (!getHeaders) {
+      setError("Authentication headers not available. Please refresh the page.");
       setLoading(false);
       return;
     }
@@ -161,6 +154,11 @@ const handleSubmit = async (e) => {
     try {
       if (!csrfToken) {  // Ensure CSRF token is available
         setError("CSRF token is missing!");
+        return;
+      }
+
+      if (!getHeaders) {
+        setError("Authentication headers not available. Please refresh the page.");
         return;
       }
 
@@ -328,8 +326,8 @@ const handleSubmit = async (e) => {
           </div>
         </div>
 
-        <button type="submit" className="submit-button" disabled={loading}>
-          {loading ? 'Generating Ideas...' : 'Generate Content Ideas'}
+        <button type="submit" className="submit-button" disabled={loading || authLoading}>
+          {loading ? 'Generating Ideas...' : authLoading ? 'Loading...' : 'Generate Content Ideas'}
         </button>
       </form>
 
