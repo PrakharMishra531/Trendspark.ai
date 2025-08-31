@@ -4,6 +4,7 @@ import IdeaDetails from './IdeaDetails';
 import './BeginnerIdeaGenerator.css';
 import customFetch from './api';
 import { getCsrfTokenGlobally } from './csrfTokenStorage';
+import { useAuth } from './AuthContext';
 
 // Custom IdeaCard component with Vercel-inspired styling
 const IdeaCard = ({ title, description, onClick }) => {
@@ -23,6 +24,7 @@ const IdeaCard = ({ title, description, onClick }) => {
 
 const BeginnerIdeaGenerator = () => {
   
+  const { getHeaders } = useAuth();
   const [csrfToken, setCsrfToken] = useState(getCsrfTokenGlobally()); // Initialize with the current token
 
   useEffect(() => {
@@ -100,10 +102,7 @@ const handleSubmit = async (e) => {
 
     const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      },
+      headers: getHeaders(),
       body: JSON.stringify(payload),
       credentials: 'include',
     });
@@ -167,10 +166,7 @@ const handleSubmit = async (e) => {
 
       const response = await customFetch('https://trendspark.prakharmishra.tech/api/get-idea-details/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken, // Include CSRF token in the request header
-        },
+        headers: getHeaders(),
         body: JSON.stringify(payload),
         credentials: 'include',
       });
