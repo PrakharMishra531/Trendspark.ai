@@ -100,23 +100,32 @@ const handleSubmit = async (e) => {
 
     console.log('🔍 Testing suggest-ideas API...');
     console.log('📤 Sending payload:', payload);
-    console.log('📋 Headers:', getHeaders());
+    console.log('🍪 Cookies available:', document.cookie ? 'Yes' : 'No');
+    console.log('🔐 User authenticated:', isAuthenticated);
+    console.log('👤 User:', user?.username);
     
-    // Try without CSRF token first to see if that's the issue
-    const testHeaders = {
-      'Content-Type': 'application/json'
-    };
-    
-    console.log('🧪 Testing with basic headers:', testHeaders);
+    // Force refresh CSRF token before making the API call
+    console.log('🔄 Refreshing CSRF token...');
+    try {
+      const tokenResponse = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
+      if (tokenResponse.ok) {
+        const tokenData = await tokenResponse.json();
+        console.log('✅ New CSRF token received:', tokenData.csrfToken);
+        console.log('🔄 Updating CSRF token in context...');
+        // The auth context should automatically update, let's continue with the API call
+      }
+    } catch (err) {
+      console.log('❌ Failed to refresh token:', err.message);
+    }
     
     const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
       method: 'POST',
-      headers: testHeaders,
+      headers: getHeaders(),
       body: JSON.stringify(payload),
       credentials: 'include',
     });
     
-    console.log('✅ Suggest-ideas API response status:', response.status);
+    console.log('✅ POST request status:', response.status);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
