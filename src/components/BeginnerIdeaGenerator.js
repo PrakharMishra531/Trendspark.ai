@@ -23,7 +23,7 @@ const IdeaCard = ({ title, description, onClick }) => {
 
 const BeginnerIdeaGenerator = () => {
   
-  const { getHeaders, loading: authLoading, csrfToken } = useAuth();
+  const { getHeaders, loading: authLoading, csrfToken, user, isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState({
     primary_category: '',
@@ -92,6 +92,20 @@ const handleSubmit = async (e) => {
       setLoading(false);
       return;
     }
+
+    if (!isAuthenticated || !user) {
+      setError("You must be logged in to generate ideas. Please log in first.");
+      setLoading(false);
+      return;
+    }
+
+    // Debug authentication state
+    console.log('🔍 Debug Info:');
+    console.log('CSRF Token:', csrfToken);
+    console.log('Headers:', getHeaders());
+    console.log('User authenticated:', isAuthenticated);
+    console.log('User:', user);
+    console.log('Payload:', payload);
 
     const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
       method: 'POST',
@@ -162,6 +176,11 @@ const handleSubmit = async (e) => {
         return;
       }
 
+      if (!isAuthenticated || !user) {
+        setError("You must be logged in to get idea details. Please log in first.");
+        return;
+      }
+
       const response = await customFetch('https://trendspark.prakharmishra.tech/api/get-idea-details/', {
         method: 'POST',
         headers: getHeaders(),
@@ -188,6 +207,21 @@ const handleSubmit = async (e) => {
     
     <div className="beginner-idea-generator">
       <h2>Content Idea Generator</h2>
+      
+      {/* Authentication Status */}
+      <div style={{ 
+        padding: '10px', 
+        margin: '10px 0', 
+        borderRadius: '5px',
+        backgroundColor: isAuthenticated ? '#d4edda' : '#f8d7da',
+        color: isAuthenticated ? '#155724' : '#721c24',
+        border: `1px solid ${isAuthenticated ? '#c3e6cb' : '#f5c6cb'}`
+      }}>
+        {isAuthenticated ? 
+          `✅ Logged in as: ${user?.username || 'User'}` : 
+          '❌ Not authenticated - Please log in first'
+        }
+      </div>
 
       <form onSubmit={handleSubmit} className="idea-form">
         <div className="form-group">
