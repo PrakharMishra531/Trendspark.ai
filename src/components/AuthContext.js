@@ -13,7 +13,9 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       setLoading(true);
       try {
-        const response = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
+        const response = await customFetch('https://trendspark.prakharmishra.tech/auth/status/', {
+          credentials: 'include'  // Add this to ensure cookies are sent/received
+        });
         const data = await response.json();
 
         if (response.ok) {
@@ -74,7 +76,12 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         headers: getHeaders(), 
         body: JSON.stringify({ username, password }),
+        credentials: 'include',  // Add this to ensure cookies are sent/received
       });
+
+      console.log('🔐 Login response status:', response.status);
+      console.log('🍪 Cookies after login attempt:', document.cookie);
+      console.log('📋 Login response headers:', Object.fromEntries(response.headers.entries()));
 
       const data = await response.json();
 
@@ -104,6 +111,7 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(userData),
+        credentials: 'include',  // Add this to ensure cookies are sent/received
       });
 
       const data = await response.json(); 
@@ -144,6 +152,7 @@ export const AuthProvider = ({ children }) => {
       const response = await customFetch('https://trendspark.prakharmishra.tech/auth/logout/', {
         method: 'POST',
         headers: getHeaders(),
+        credentials: 'include',  // Add this to ensure cookies are sent/received
       });
   
       console.log("✅ Logout response status:", response.status);

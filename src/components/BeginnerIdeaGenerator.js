@@ -103,6 +103,8 @@ const handleSubmit = async (e) => {
     console.log('🍪 Cookies available:', document.cookie ? 'Yes' : 'No');
     console.log('🔐 User authenticated:', isAuthenticated);
     console.log('👤 User:', user?.username);
+    console.log('🔑 CSRF Token available:', csrfToken ? 'Yes' : 'No');
+    console.log('📨 Headers being sent:', getHeaders());
     
     // Check if we have session cookies - but don't fail immediately
     if (!document.cookie) {
@@ -114,6 +116,9 @@ const handleSubmit = async (e) => {
           const authData = await authResponse.json();
           console.log('✅ Auth status refreshed:', authData);
           console.log('🍪 Cookies after auth refresh:', document.cookie);
+          console.log('📋 Auth response headers:', Object.fromEntries(authResponse.headers.entries()));
+        } else {
+          console.log('❌ Auth status failed:', authResponse.status);
         }
       } catch (authErr) {
         console.log('❌ Failed to refresh auth status:', authErr.message);
@@ -127,6 +132,7 @@ const handleSubmit = async (e) => {
       const authData = await authCheckResponse.json();
       console.log('🔐 Auth check result:', authData);
       console.log('🍪 Cookies after auth check:', document.cookie);
+      console.log('📋 Auth check response headers:', Object.fromEntries(authCheckResponse.headers.entries()));
       
       if (!authCheckResponse.ok || !authData.isAuthenticated) {
         console.log('❌ User not properly authenticated, redirecting to login');
@@ -151,6 +157,11 @@ const handleSubmit = async (e) => {
     console.log('✅ POST request status:', response.status);
     console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
     console.log('🍪 Cookies before response processing:', document.cookie);
+    console.log('🔍 Request details:');
+    console.log('  - URL: https://trendspark.prakharmishra.tech/api/suggest-ideas/');
+    console.log('  - Method: POST');
+    console.log('  - Credentials: include');
+    console.log('  - Headers:', getHeaders());
 
     if (!response.ok) {
       // Try to get more detailed error information
@@ -162,8 +173,9 @@ const handleSubmit = async (e) => {
       } catch (parseErr) {
         console.log('❌ Could not parse error response:', parseErr.message);
         const errorText = await response.text();
-        console.log('❌ Raw error response:', errorText);
-        errorMessage += ` - ${errorText}`;
+        console.log('❌ Raw error response (first 500 chars):', errorText.substring(0, 500));
+        console.log('❌ Full raw error response:', errorText);
+        errorMessage += ` - HTML Error Page (likely Django debug page)`;
       }
       throw new Error(errorMessage);
     }
