@@ -121,16 +121,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # ==============================================================================
-# SECURITY & CORS SETTINGS (TEMPORARY - WIDE OPEN FOR TESTING)
+# SECURITY & CORS SETTINGS 
 # ==============================================================================
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+        'https://trendspark.prakharmishra.tech',
+        'https://trendsparkai.netlify.app'
+]
+
+
 CORS_ALLOW_CREDENTIALS = True
-
-# We still need these to be defined for CSRF to work correctly with credentials.
-CSRF_COOKIE_SECURE = False  # Set this to True once you are using HTTPS
-CSRF_COOKIE_SAMESITE = 'Lax'
-
 
 # ==============================================================================
 # REST FRAMEWORK & SESSION SETTINGS
@@ -152,6 +153,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600    
 
 
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = not DEBUG # Secure cookies only when not in DEBUG mode
-CSRF_COOKIE_SECURE = not DEBUG # Secure cookies only when not in DEBUG mode
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://trendspark.prakharmishra.tech',  
+    'https://trendsparkai.netlify.app',       
+    'http://localhost:3000',                  
+]
+
+#CSRF_TRUSTED_ORIGINS is needed for browser to access
