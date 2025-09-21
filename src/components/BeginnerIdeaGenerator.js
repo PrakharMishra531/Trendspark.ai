@@ -4,7 +4,6 @@ import './BeginnerIdeaGenerator.css';
 import customFetch from './api';
 import { useAuth } from './AuthContext';
 
-// Custom IdeaCard component (no changes needed here)
 const IdeaCard = ({ title, description, onClick }) => {
   return (
     <div className="idea-card" onClick={onClick}>
@@ -62,7 +61,6 @@ const BeginnerIdeaGenerator = () => {
     setSelectedIdea(null);
     setIdeaDetails(null);
 
-    // Simple authentication check
     if (!isAuthenticated) {
       setError("You must be logged in to generate ideas. Please log in first.");
       setLoading(false);
@@ -78,27 +76,26 @@ const BeginnerIdeaGenerator = () => {
     };
 
     try {
-      // customFetch now handles CSRF token automatically
       const response = await customFetch('https://trendspark.prakharmishra.tech/api/suggest-ideas/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorText = await response.text(); // Get raw text for better error logging
+        const errorText = await response.text();
         throw new Error(`HTTP error! Status: ${response.status} - ${errorText.substring(0, 500)}`);
       }
 
       const result = await response.json();
       
       if (result.ideas && Array.isArray(result.ideas)) {
-        const completeIdeas = result.ideas.filter(idea => idea.title && idea.short_description);
+        // Filter for ideas that have both a title and a description
+        const completeIdeas = result.ideas.filter(idea => idea.title && idea.description);
         setIdeas(completeIdeas);
       } else {
         setIdeas([]);
       }
       
-      // Scroll to results after a short delay
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
@@ -115,7 +112,6 @@ const BeginnerIdeaGenerator = () => {
       setError("Please ensure 'Primary Category' and 'Ideal Creator' are filled out before getting details.");
       return;
     }
-
     if (!isAuthenticated) {
         setError("You must be logged in to get idea details. Please log in first.");
         return;
@@ -127,7 +123,8 @@ const BeginnerIdeaGenerator = () => {
 
     const payload = {
       topic: idea.title,
-      description: idea.short_description,
+      // --- FIX #1 ---
+      description: idea.description, // Use the correct property name
       primary_category: formData.primary_category,
       ideal_creator: formData.ideal_creator,
       budget: formData.budget,
@@ -163,12 +160,10 @@ const BeginnerIdeaGenerator = () => {
           <label htmlFor="primary_category">Primary Video Category (e.g., Gaming, Music)</label>
           <input type="text" id="primary_category" name="primary_category" value={formData.primary_category} onChange={handleInputChange} required />
         </div>
-
         <div className="form-group">
             <label htmlFor="ideal_creator">Who is your ideal content creator (e.g., MrBeast, Marques Brownlee)?</label>
             <input type="text" id="ideal_creator" name="ideal_creator" value={formData.ideal_creator} onChange={handleInputChange} required />
         </div>
-
         <div className="form-group">
             <label>Budget</label>
             <div className="radio-group">
@@ -177,7 +172,6 @@ const BeginnerIdeaGenerator = () => {
                 <label><input type="radio" name="budget" value="high" checked={formData.budget === 'high'} onChange={handleInputChange} /> High</label>
             </div>
         </div>
-
         <div className="form-group">
             <label>Resources Available</label>
             <div className="checkbox-group">
@@ -187,7 +181,6 @@ const BeginnerIdeaGenerator = () => {
                 <label><input type="checkbox" name="resources" value="editing software" onChange={handleCheckboxChange} checked={formData.resources.includes('editing software')} /> Editing Software</label>
             </div>
         </div>
-
         <div className="form-group">
             <label>Preferred Video Style</label>
             <div className="radio-group">
@@ -195,7 +188,6 @@ const BeginnerIdeaGenerator = () => {
                 <label><input type="radio" name="video_style" value="long" checked={formData.video_style === 'long'} onChange={handleInputChange} /> Long</label>
             </div>
         </div>
-
         <button type="submit" className="submit-button" disabled={loading || authLoading}>
           {loading ? 'Generating Ideas...' : authLoading ? 'Loading Auth...' : 'Generate Content Ideas'}
         </button>
@@ -220,7 +212,8 @@ const BeginnerIdeaGenerator = () => {
               <IdeaCard
                 key={index}
                 title={idea.title}
-                description={idea.short_description}
+                // --- FIX #2 ---
+                description={idea.description} // Use the correct property name
                 onClick={() => handleCardClick(idea)}
               />
             ))}
