@@ -1,177 +1,118 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import customFetch from './api';
-import { setCsrfTokenGlobally } from './csrfTokenStorage';
+import { setCsrfToken } from './csrfTokenStorage'; // Import the global token setter
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [csrfToken, setCsrfToken] = useState(null); 
-  
-  useEffect(() => {
-    const checkAuth = async () => {
-      setLoading(true);
-      try {
-        const response = await customFetch('https://trendspark.prakharmishra.tech/auth/status/', {
-          credentials: 'include'  // Add this to ensure cookies are sent/received
-        });
-        const data = await response.json();
 
-        if (response.ok) {
-          setCsrfToken(data.csrfToken); 
-          setCsrfTokenGlobally(data.csrfToken);
-          if (data.isAuthenticated && data.username) {
-             setUser({
-                id: data.id,
-                username: data.username,
-                email: data.email,
-                first_name: data.first_name,
-                last_name: data.last_name,
-                is_staff: data.is_staff
-             });
-          } else {
-            setUser(null);
-          }
+  // This function is the single source of truth for the user's auth state
+  const checkAuthStatus = async () => {
+    try {
+      const response = await customFetch('https://trendspark.prakharmishra.tech/auth/status/');
+      const data = await response.json();
+
+      if (response.ok) {
+        // Set the token in our global store so customFetch can use it
+        setCsrfToken(data.csrfToken); 
+        
+        if (data.isAuthenticated) {
+           setUser({
+             id: data.id,
+             username: data.username,
+             email: data.email,
+             firstName: data.first_name,
+             lastName: data.last_name,
+           });
         } else {
-           console.error('Auth status check failed:', data);
-           setUser(null);
-           setCsrfToken(null);
-           setCsrfTokenGlobally(null); 
+          setUser(null);
         }
-      } catch (err) {
-        console.error('Auth check error:', err);
-        setUser(null);
-        setCsrfToken(null); 
-        setCsrfTokenGlobally(null); 
-      } finally {
-        setLoading(false);
+      } else {
+         console.error('Auth status check failed:', data);
+         setUser(null);
+         setCsrfToken(null);
       }
-    };
-
-    checkAuth();
-  }, []);
-
-  const getHeaders = () => {
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (csrfToken) {
-      headers['X-CSRFToken'] = csrfToken; 
-    } else {
-      console.warn('CSRF token not available for request.');
+    } catch (err) {
+      console.error('Auth check network error:', err);
+      setUser(null);
+      setCsrfToken(null); 
+    } finally {
+      setLoading(false);
     }
-    return headers;
   };
 
-  // Login function
+  useEffect(() => {
+    setLoading(true);
+    checkAuthStatus();
+  }, []); // Runs once when the app loads
+
   const login = async (username, password) => {
     setError(null);
-    if (!csrfToken) { 
-        setError("CSRF token not loaded. Please refresh.");
-        return false;
-    }
     try {
       const response = await customFetch('https://trendspark.prakharmishra.tech/auth/login/', {
         method: 'POST',
-        headers: getHeaders(), 
         body: JSON.stringify({ username, password }),
-        credentials: 'include',  // Add this to ensure cookies are sent/received
       });
-
-      console.log('🔐 Login response status:', response.status);
-      console.log('🍪 Cookies after login attempt:', document.cookie);
-      console.log('📋 Login response headers:', Object.fromEntries(response.headers.entries()));
-
+      
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.detail || data.error || 'Login failed');
+        // Use the actual error from the backend if available
+        throw new Error(data.error || 'Login failed');
       }
-
-      setUser(data); 
+      
+      // After a successful login, re-check the auth status to get the
+      // new user data and a fresh CSRF token.
+      await checkAuthStatus();
       return true;
+
     } catch (err) {
       setError(err.message);
-      console.error('Login error:', err);
       return false;
     }
   };
-
 
   const signup = async (userData) => {
     setError(null);
-     if (!csrfToken) {
-        setError("CSRF token not loaded. Please refresh.");
+    try {
+        const response = await customFetch('https://trendspark.prakharmishra.tech/auth/register/', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            // Extract a user-friendly error message
+            const errorMessage = Object.values(data).join(' ');
+            throw new Error(errorMessage || 'Signup failed');
+        }
+
+        // After signup, re-check status to log the user in and get a CSRF token
+        await checkAuthStatus();
+        return true;
+
+    } catch(err) {
+        setError(err.message);
         return false;
     }
-
-    try {
-      const response = await customFetch('https://trendspark.prakharmishra.tech/auth/register/', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(userData),
-        credentials: 'include',  // Add this to ensure cookies are sent/received
-      });
-
-      const data = await response.json(); 
-
-      if (!response.ok) {
-
-         const messages = Object.entries(data)
-            .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
-            .join('; ');
-         throw new Error(messages || 'Registration failed');
-      }
-
-      setUser(data);
-      return true;
-    } catch (err) {
-      setError(err.message);
-      console.error('Signup error:', err);
-      return false;
-    }
   };
 
-  // Logout function
   const logout = async () => {
     setError(null);
-  
-    if (!csrfToken) {
-      console.warn("⚠️ CSRF token missing for logout! Retrying...");
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-  
-    if (!csrfToken) {
-      console.error("❌ Still no CSRF token after delay. Aborting logout.");
-      return false;
-    }
-  
     try {
-      console.log("🚀 Sending logout request with CSRF token:", csrfToken);
-      const response = await customFetch('https://trendspark.prakharmishra.tech/auth/logout/', {
-        method: 'POST',
-        headers: getHeaders(),
-        credentials: 'include',  // Add this to ensure cookies are sent/received
-      });
-  
-      console.log("✅ Logout response status:", response.status);
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Logout failed');
-      }
-  
-      setUser(null);
-      console.log('🎉 User logged out successfully!');
-      return true;
+        await customFetch('https://trendspark.prakharmishra.tech/auth/logout/', {
+            method: 'POST',
+        });
     } catch (err) {
-      setError(err.message);
-      console.error('Logout error:', err);
-      return false;
+        console.error("Logout failed, but clearing client-side state anyway:", err);
+    } finally {
+        // Always clear user state and token on logout
+        setUser(null);
+        setCsrfToken(null);
     }
   };
-  
 
   const value = {
     user,
@@ -180,15 +121,14 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    isAuthenticated: !!user && !loading, 
-    csrfToken,
-    getHeaders
+    isAuthenticated: !!user && !loading,
   };
 
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);
-
-export default AuthContext;
