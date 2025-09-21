@@ -1,0 +1,4 @@
+requests
+groq
+pytz
+boto3
